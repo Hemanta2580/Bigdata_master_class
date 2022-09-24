@@ -1,0 +1,127 @@
+Assignment1:
+
+1. Store raw data into hdfs location:
+
+hadoop fs -put /tmp/hive_data1/sales_order_data.csv /hive_data2/
+
+3. Create a internal hive table "sales_order_csv" which will store csv data sales_order_csv .. make sure to skip header row while creating table
+
+ans:-
+create table sales_order_csv
+    > (
+    > ORDERNUMBER int,
+    > QUANTITYORDERED int,
+    > PRICEEACH float,
+    > ORDERLINENUMBER int,
+    > SALES float,
+    > STATUS string,
+    > QTR_ID int,
+    > MONTH_ID int,
+    > YEAR_ID int,
+    > PRODUCTLINE string,
+    > MSRP int,
+    > PRODUCTCODE string,
+    > PHONE string,
+    > CITY string,
+    > STATE string,
+    > POSTALCODE string,
+    > COUNTRY string,
+    > TERRITORY string,
+    > CONTACTLASTNAME string,
+    > CONTACTFIRSTNAME string,
+    > DEALSIZE string
+    > )
+    > row format delimited
+    > fields terminated by ','
+    > tblproperties("skip.header.line.count"="1")
+    > ;
+
+4. Load data from hdfs path into "sales_order_csv"
+
+ans:-
+    > load data inpath '/hive_data2/' into table sales_order_csv;
+
+5. Create an internal hive table which will store data in ORC format "sales_order_orc"
+ans:-
+e> create table sales_order_csv_orc
+    > (
+    > ORDERNUMBER int,
+    > QUANTITYORDERED int,
+    > PRICEEACH float,
+    > ORDERLINENUMBER int,
+    > SALES float,
+    > STATUS string,
+    > QTR_ID int,
+    > MONTH_ID int,
+    > YEAR_ID int,
+    > PRODUCTLINE string,
+    > MSRP int,
+    > PRODUCTCODE string,
+    > PHONE string,
+    > CITY string,
+    > STATE string,
+    > POSTALCODE string,
+    > COUNTRY string,
+    > TERRITORY string,
+    > CONTACTLASTNAME string,
+    > CONTACTFIRSTNAME string,
+    > DEALSIZE string
+    > )
+    > stored as orc;
+6. Load data from "sales_order_csv" into "sales_order_orc"
+
+ans:-
+ insert overwrite table sales_order_csv_orc select * from sales_order_csv;
+
+Perform below menioned queries on "sales_order_orc" table :
+
+a. Calculatye total sales per year
+
+ ans:-select sum(SALES) as Total_sale from  sales_order_csv_orc group by YEAR_ID;
+
+Find a product for which maximum orders were placed:
+
+ans:-
+select sum(QUANTITYORDERED) as total_order,PRODUCTLINE from sales_order_csv_orc group by PRODUCTLINE order by total_order desc limit 1;
+
+out put:
+total_order     productline
+33992   Classic Cars
+
+Calculate the total sales for each quarter:
+
+select sum(SALES) as Total_sales, QTR_ID from sales_order_csv_orc group by QTR_ID order by Total_sales
+
+output:
+total_sales     qtr_id
+2350817.726501465       1
+2048120.3029174805      2
+1758910.808959961       3
+3874780.010925293       4
+
+d. In which quarter sales was minimum
+
+select sum(SALES) as Total_sales, QTR_ID from sales_order_csv_orc group by QTR_ID order by Total_sales asc limt 1;
+
+output:
+total_sales     qtr_id
+1758910.808959961       3
+
+e. In which country sales was maximum and in which country sales was minimum
+
+MINIMUM:- select sum(SALES) as Total_sales, COUNTRY  from sales_order_csv_orc group by COUNTRY order by Total_sales asc limit 1;
+OUTPUT:-
+total_sales     country
+57756.43029785156       Ireland
+
+maximum-select sum(SALES) as Total_sales, COUNTRY  from sales_order_csv_orc group by COUNTRY order by Total_sales desc limit 1;
+output:-
+total_sales     country
+3627982.825744629       USA
+
+f. Calculate quartelry sales for each city:
+
+ans:-select sum(SALES) as total_sales,COUNTRY,QTR_ID from sales_order_csv_orc group by QTR_id,COUNTRY;
+output-screenshot added.
+
+
